@@ -6,9 +6,10 @@
 @Desc    : light_button
 @Software: PyCharm
 """
+from PyQt5 import QtCore
 from PyQt5.QtWidgets import QWidget, QApplication
 from PyQt5.QtGui import QColor, QPainter, QFont, QLinearGradient, QPaintEvent
-from PyQt5.QtCore import QTimer, QPoint, Qt, QRect
+from PyQt5.QtCore import QTimer, QPoint, Qt, QRect, QObject
 from PyQt5.Qt import QMouseEvent, QEvent, QPainterPath
 import sys
 
@@ -39,9 +40,9 @@ class LightButton(QWidget):
 
         self.is_alarm = False
         self.timer_alarm = QTimer(self)
-        self.timer_alarm.setInterval(1000)
+        self.timer_alarm.setInterval(500)
 
-    def eventFilter(self, watch: 'QObject', event: 'QEvent') -> bool:
+    def eventFilter(self, watch: QObject, event: QEvent):
         if self.can_move:
             last_point = QPoint()
             pressed = False
@@ -56,15 +57,15 @@ class LightButton(QWidget):
                 self.move(self.x() + dx, self.y() + dy)
             elif mouse_event.type() == QEvent.MouseButtonRelease and pressed:
                 pressed = False
-        super().eventFilter(watch, event)
+        return super().eventFilter(watch, event)
 
     def paintEvent(self, a0: QPaintEvent) -> None:
         width = self.width()
         height = self.height()
         side = min(width, height)
 
-        painter = QPainter()
-        painter.setRenderHint(QPainter.Antialiasing | QPainter.TextAntialiasing)
+        painter = QPainter(self)
+        painter.setRenderHints(QPainter.Antialiasing | QPainter.TextAntialiasing)
 
         if self.show_rect:
             painter.setPen(Qt.NoPen)
@@ -79,6 +80,11 @@ class LightButton(QWidget):
         else:
             painter.translate(width / 2, height / 2)
             painter.scale(side / 200.0, side / 200.0)
+            self.draw_border_out(painter)
+            self.draw_border_in(painter)
+            self.draw_bg(painter)
+            self.draw_text(painter)
+            self.draw_overlay(painter)
 
     def draw_border_out(self, painter: QPainter):
         radius = 90
@@ -112,16 +118,16 @@ class LightButton(QWidget):
 
     def draw_text(self, painter: QPainter):
         if self.text == '':
-            return
+            return False
         radius = 100
         painter.save()
 
         font = QFont()
-        font.setPixelSize(85)
+        font.setPixelSize(50)
         painter.setFont(font)
         painter.setPen(self.text_color)
         rect = QRect(-radius, -radius, radius * 2, radius * 2)
-        painter.drawText(rect, Qt.AlignCenter, text=self.text)
+        painter.drawText(rect, Qt.AlignCenter, self.text)
         painter.restore()
 
     def draw_overlay(self, painter: QPainter):
@@ -135,12 +141,12 @@ class LightButton(QWidget):
         big_circle = QPainterPath()
 
         radius -= 1
-        small_circle.addEllipse(-radius, -radius, radius*2, radius*2)
+        small_circle.addEllipse(-radius, -radius, radius * 2, radius * 2)
         radius *= 2
-        big_circle.addEllipse(-radius, -radius+140, radius * 2, radius * 2)
+        big_circle.addEllipse(-radius, -radius + 140, radius * 2, radius * 2)
         highlight = small_circle - big_circle
 
-        linear_gradient = QLinearGradient(0, -radius / 2, 0, 0 )
+        linear_gradient = QLinearGradient(0, -radius / 2, 0, 0)
         self.overlay_color.setAlpha(100)
         linear_gradient.setColorAt(0.0, self.overlay_color)
         self.overlay_color.setAlpha(30)
@@ -150,9 +156,166 @@ class LightButton(QWidget):
         painter.drawPath(highlight)
         painter.restore()
 
+    def get_text(self):
+        return self.text
 
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    win = LightButton()
-    win.show()
-    sys.exit(app.exec_())
+    def get_text_color(self):
+        return self.text_color
+
+    def get_alarm_color(self):
+        return self.alarm_color
+
+    def get_normal_color(self):
+        return self.norma_color
+
+    def get_border_out_color_start(self):
+        return self.border_out_color_start
+
+    def get_border_out_color_end(self):
+        return self.border_out_color_end
+
+    def get_border_in_color_start(self):
+        return self.border_in_color_start
+
+    def get_border_in_color_end(self):
+        return self.border_in_color_end
+
+    def get_bg_color(self):
+        return self.bg_color
+
+    def get_can_move(self):
+        return self.can_move
+
+    def get_show_rect(self):
+        return self.show_rect
+
+    def get_show_overlay(self):
+        return self.show_overlay
+
+    def get_overlay_color(self):
+        return self.overlay_color
+
+    def sizeHint(self) -> QtCore.QSize:
+        return QtCore.QSize(100, 100)
+
+    def minimumSizeHint(self) -> QtCore.QSize:
+        return QtCore.QSize(10, 10)
+
+    def set_text(self, text):
+        if self.text != text:
+            self.text = text
+            self.update()
+
+    def set_text_color(self, text_color):
+        if self.text_color != text_color:
+            self.text_color = text_color
+            self.update()
+
+    def set_alarm_color(self, alarm_color):
+        if self.alarm_color != alarm_color:
+            self.alarm_color = alarm_color
+            self.update()
+
+    def set_normal_color(self, normal_color):
+        if self.norma_color != normal_color:
+            self.norma_color = normal_color
+            self.update()
+
+    def set_border_out_color_start(self, border_out_color_start):
+        if self.border_out_color_start != border_out_color_start:
+            self.border_out_color_start = border_out_color_start
+            self.update()
+
+    def set_border_out_color_end(self, border_out_color_end):
+        if self.border_out_color_end != border_out_color_end:
+            self.border_out_color_end = border_out_color_end
+            self.update()
+
+    def set_border_in_color_start(self, border_in_color_start):
+        if self.border_in_color_start != border_in_color_start:
+            self.border_in_color_start = border_in_color_start
+            self.update()
+
+    def set_border_in_color_end(self, border_in_color_end):
+        if self.border_in_color_end != border_in_color_end:
+            self.border_in_color_end = border_in_color_end
+            self.update()
+
+    def set_bg_color(self, bg_color):
+        if self.bg_color != bg_color:
+            self.bg_color = bg_color
+            self.update()
+
+    def set_can_move(self, can_move):
+        if self.can_move != can_move:
+            self.can_move = can_move
+            self.update()
+
+    def set_show_rect(self, show_rect):
+        if self.show_rect != show_rect:
+            self.show_rect = show_rect
+            self.update()
+
+    def set_show_overlay(self, show_overlay):
+        if self.show_overlay != show_overlay:
+            self.show_overlay = show_overlay
+            self.update()
+
+    def set_overlay_color(self, overlay_color):
+        if self.overlay_color != overlay_color:
+            self.overlay_color = overlay_color
+            self.update()
+
+    def set_green(self):
+        self.text_color = QColor(255, 255, 255)
+        self.set_bg_color(QColor(0, 166, 0))
+
+    def set_red(self):
+        self.text_color = QColor(255, 255, 255)
+        self.set_bg_color(QColor(255, 0, 0))
+
+    def set_yellow(self):
+        self.text_color = QColor(25, 50, 7)
+        self.set_bg_color(QColor(238, 238, 0))
+
+    def set_black(self):
+        self.text_color = QColor(255, 255, 255)
+        self.set_bg_color(QColor(10, 10, 10))
+
+    def set_gray(self):
+        self.text_color = QColor(255, 255, 255)
+        self.set_bg_color(QColor(129, 129, 129))
+
+    def set_blue(self):
+        self.text_color = QColor(255, 255, 255)
+        self.set_bg_color(QColor(0, 0, 166))
+
+    def set_light_blue(self):
+        self.text_color = QColor(255, 255, 255)
+        self.set_bg_color(QColor(100, 184, 255))
+
+    def set_light_red(self):
+        self.text_color = QColor(255, 255, 255)
+        self.set_bg_color(QColor(255, 107, 107))
+
+    def set_light_green(self):
+        self.text_color = QColor(255, 255, 255)
+        self.set_bg_color(QColor(24, 189, 155))
+
+    def start_alarm(self):
+        if not self.timer_alarm.isActive():
+            self.timer_alarm.start()
+
+    def stop_alarm(self):
+        if self.timer_alarm.isActive():
+            self.timer_alarm.stop()
+
+    def alarm(self):
+        if self.is_alarm:
+            self.text_color = QColor(255, 255, 255)
+            self.bg_color = self.norma_color
+        else:
+            self.text_color = QColor(255, 255, 255)
+            self.bg_color = self.alarm_color
+        self.update()
+        self.is_alarm = not self.is_alarm
