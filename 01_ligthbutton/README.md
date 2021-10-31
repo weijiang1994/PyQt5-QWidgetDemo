@@ -1,6 +1,6 @@
 ### LightButton
 
-`LightButton`是通过继承`Qwidget`通过重写`paintEvent`方法来自定义个一个类似于警告灯的效果
+`LightButton`是通过继承`Qwidget`通过重写`paintEvent`方法来自定义一个类似于警告灯的效果
 
 
 ![img.png](img.png)
