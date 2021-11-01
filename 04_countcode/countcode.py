@@ -196,21 +196,16 @@ class CountCode(QWidget, Ui_frmCountCode):
                 if line.startswith('/*'):
                     is_note = True
 
-                if line.startswith('"""'):
-                    is_note = True
-
                 if is_note:
                     line_notes += 1
                 else:
-                    if line.startswith('//') or line.startswith('#'):
+                    if line.startswith('//'):
                         line_notes += 1
                     elif line == '':
                         line_blank += 1
                     else:
                         line_code += 1
                 if line.endswith('*/'):
-                    is_note = False
-                if line.endswith('"""'):
                     is_note = False
         return line_code, line_notes, line_blank
 
