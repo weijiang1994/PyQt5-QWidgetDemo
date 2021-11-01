@@ -46,7 +46,8 @@ class LightButton(QWidget):
         if self.can_move:
             last_point = QPoint()
             pressed = False
-            mouse_event = QMouseEvent(event)
+            # mouse_event = QMouseEvent(event)
+            mouse_event = event
             if mouse_event.type() == QEvent.MouseButtonPress:
                 if self.rect().contains(mouse_event.pos()) and mouse_event.button() == Qt.LeftButton:
                     last_point = mouse_event.pos()

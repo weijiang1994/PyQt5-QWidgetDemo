@@ -21,6 +21,7 @@ class LightButtonWin(QWidget):
         self.ltbn2 = LightButton()
         self.ltbn3 = LightButton()
         self.layout = QHBoxLayout()
+        self.ltbn1.set_can_move(True)
         self.ltbn2.set_bg_color(QColor(255, 107, 107))
         self.ltbn3.set_bg_color(QColor(24, 189, 155))
         self.layout.addWidget(self.ltbn1)
