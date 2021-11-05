@@ -16,6 +16,7 @@ import datetime
 class FlatWin(QWidget, Ui_frmFlatUI):
     def __init__(self):
         super(FlatWin, self).__init__()
+        self.flat_ui = FlatUI()
         self.setupUi(self)
         self.init_form()
 
@@ -31,7 +32,6 @@ class FlatWin(QWidget, Ui_frmFlatUI):
         self.slider2.setValue(30)
 
         self.setStyleSheet("*{outline:0px;}QWidget#frmFlatUI{background:#FFFFFF;}")
-        self.flat_ui = FlatUI()
         self.flat_ui.set_pushbutton_qss(self.btn1)
         self.flat_ui.set_pushbutton_qss(self.btn2, 5, 8, "#1ABC9C", "#E6F8F5", "#2EE1C1", "#FFFFFF", "#16A086",
                                         "#A7EEE6")
@@ -93,12 +93,14 @@ class FlatWin(QWidget, Ui_frmFlatUI):
             self.tableWidget.setItem(i, 3, item_content)
             self.tableWidget.setItem(i, 4, item_time)
 
-    def set_value(self, value, obj):
+    @staticmethod
+    def set_value(value, obj):
         obj.setValue(value)
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     win = FlatWin()
+    win.setWindowTitle('FlatUI')
     win.show()
     sys.exit(app.exec_())
