@@ -80,7 +80,6 @@ class CountCode(QWidget, Ui_frmCountCode):
     def count_code(self, filepath: str):
         m_dir = QDir(filepath)
         file_infos = m_dir.entryInfoList()
-        print(file_infos)
         for file_info in file_infos:
             filename = file_info.fileName()
             if file_info.isFile():
@@ -233,7 +232,6 @@ class CountCode(QWidget, Ui_frmCountCode):
     def on_btn_openpath_clicked(self):
         path = QFileDialog.getExistingDirectory(self, '选择目录', './',
                                                 QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks)
-        print(path)
         if path:
             self.txtPath.setText(path)
             self.list_file.clear()
