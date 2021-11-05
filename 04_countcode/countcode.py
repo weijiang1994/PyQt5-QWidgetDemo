@@ -244,5 +244,6 @@ class CountCode(QWidget, Ui_frmCountCode):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     win = CountCode()
+    win.setWindowTitle('Count Code')
     win.show()
     sys.exit(app.exec_())
