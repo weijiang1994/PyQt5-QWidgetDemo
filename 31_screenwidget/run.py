@@ -21,11 +21,13 @@ class ScreenWidgetWin(Ui_frmScreenWidget, QWidget):
         self.pushButton.clicked.connect(self.start_grab)
 
     def start_grab(self):
-        ScreenWidget(self).showFullScreen()
+        self.screen_widget = ScreenWidget(self)
+        self.screen_widget.showFullScreen()
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     win = ScreenWidgetWin()
+    win.setWindowTitle('ScreenShot')
     win.show()
     sys.exit(app.exec_())

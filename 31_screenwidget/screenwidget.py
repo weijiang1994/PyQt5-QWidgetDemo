@@ -11,9 +11,8 @@ import datetime
 
 from PyQt5 import QtGui
 from PyQt5.QtWidgets import QWidget, QMenu, QAction, QApplication, qApp, QFileDialog
-from PyQt5.QtCore import QSize, QPoint, QMutexLocker, Qt, QT_VERSION
+from PyQt5.QtCore import QSize, QPoint, Qt
 from PyQt5.QtGui import QPainter, QPen, QPixmap, QColor
-from PyQt5.Qt import QMutex, PYQT_VERSION_STR
 from enum import Enum
 
 
@@ -55,7 +54,7 @@ class Screen:
         self.end_pos = pos
         self.left_up_pos = self.start_pos
         self.right_down_pos = self.end_pos
-        # TODO
+        self.cmp_point(self.left_up_pos, self.right_down_pos)
 
     def set_start(self, pos: QPoint):
         self.start_pos = pos
@@ -131,32 +130,12 @@ class ScreenWidget(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
         self.menu = QMenu(self)
-        self.screen = Screen()
+        self.screen = Screen(qApp.primaryScreen().geometry().size())
         self.full_screen = QPixmap()
         self.bg_screen = QPixmap()
         self.mov_pos = QPoint()
-        self.init_action()
-
-    def init_action(self):
-        save_action = QAction('保存当前截图')
-        self.menu.addAction(save_action)
-        save_action.triggered.connect(self.save_screen)
-
-        save_full_action = QAction('保存全屏截图')
-        self.menu.addAction(save_full_action)
-        save_full_action.triggered.connect(self.save_fullscreen)
-
-        save_screen_other = QAction('截图另存为')
-        self.menu.addAction(save_screen_other)
-        save_screen_other.triggered.connect(self.save_screen_other)
-
-        save_full_other = QAction('全屏另存为')
-        self.menu.addAction(save_full_other)
-        save_full_other.triggered.connect(self.save_full_other)
-
-        exit_action = QAction('退出截图')
-        self.menu.addAction(exit_action)
-        exit_action.triggered.connect(self.hide)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.show_menu)
 
     def paintEvent(self, a0: QtGui.QPaintEvent) -> None:
         x = self.screen.get_left_up().x()
@@ -165,6 +144,7 @@ class ScreenWidget(QWidget):
         h = self.screen.get_right_down().y() - y
 
         painter = QPainter(self)
+
         pen = QPen()
         pen.setColor(Qt.green)
         pen.setWidth(2)
@@ -177,9 +157,9 @@ class ScreenWidget(QWidget):
 
         painter.drawRect(x, y, w, h)
 
-        pen.setColor(Qt.yellow)
+        pen.setColor(Qt.white)
         painter.setPen(pen)
-        painter.drawText(x + 2, y - 8, f'截图范围：({x} * {y}) - ({x + w} * {y + h} 图片大小：({w} * {h})')
+        painter.drawText(x + 2, y - 8, f'截图范围：({x} * {y}) - ({x + w} * {y + h}) 图片大小：({w} * {h})')
 
     def showEvent(self, a0: QtGui.QShowEvent) -> None:
         point = QPoint(-1, -1)
@@ -189,10 +169,11 @@ class ScreenWidget(QWidget):
         p_screen = QApplication.primaryScreen()
         self.full_screen = p_screen.grabWindow(0, 0, 0, self.screen.width(), self.screen.height())
         pix = QPixmap(self.screen.width(), self.screen.height())
-        pix.fill(QColor(160, 160, 160, 200))
+        pix.fill(QColor(10, 160, 160, 200))
         self.bg_screen = QPixmap(self.full_screen)
         p = QPainter(self.bg_screen)
         p.drawPixmap(0, 0, pix)
+        self.setGeometry(0, 0, self.bg_screen.width(), self.screen.height())
 
     def save_screen(self):
         x = self.screen.get_left_up().x()
@@ -200,19 +181,19 @@ class ScreenWidget(QWidget):
         w = self.screen.get_right_down().x() - x
         h = self.screen.get_right_down().y() - y
 
-        filename = f'{qApp.applicationDirPath()}/screen_{now()}.png'
+        # filename = f'{qApp.applicationDirPath()}/screen_{now()}.png'
+        filename = f'screenshot_{now()}.png'
         self.full_screen.copy(x, y, w, h).save(filename, 'png')
         self.close()
 
     def save_fullscreen(self):
-        filename = f'{qApp.applicationDirPath()}/screen_{now()}.png'
+        filename = f'screenshot_{now()}.png'
         self.full_screen.save(filename, 'png')
         self.close()
 
     def save_screen_other(self):
-        name = f'{now()}.png'
+        name = f'screenshot_{now()}.png'
         filename = QFileDialog.getSaveFileName(self, '保存图片', name, 'png Files (*.png)')
-
         if filename[0] and not filename[0].endswith('.png'):
             filename += '.png'
 
@@ -221,19 +202,20 @@ class ScreenWidget(QWidget):
             y = self.screen.get_left_up().y()
             w = self.screen.get_right_down().x() - x
             h = self.screen.get_right_down().y() - y
-            self.full_screen.copy(x, y, w, h).save(filename, 'png')
+            self.full_screen.copy(x, y, w, h).save(filename[0], 'png')
             self.close()
 
     def save_full_other(self):
-        name = f'{now()}.png'
+        name = f'screenshot_{now()}.png'
         filename = QFileDialog.getSaveFileName(self, "保存图片", name, "png Files (*.png)")
 
         if not filename[0].endswith('.png'):
             filename += '.png'
 
         if filename[0]:
-            self.full_screen.save(filename, 'png')
+            self.full_screen.save(filename[0], 'png')
             self.close()
+        print('save full ')
 
     def mouseMoveEvent(self, e: QtGui.QMouseEvent) -> None:
         if self.screen.get_status() == STATUS.SELECT:
@@ -263,6 +245,25 @@ class ScreenWidget(QWidget):
         elif self.screen.get_status() == STATUS.MOV:
             self.setCursor(Qt.ArrowCursor)
 
-    def contextMenuEvent(self, e: QtGui.QContextMenuEvent) -> None:
-        self.setCursor(Qt.ArrowCursor)
-        self.menu.exec_(self.ccursor().pos())
+    def show_menu(self, point):
+        save_action = QAction('保存当前截图')
+        self.menu.addAction(save_action)
+        save_action.triggered.connect(self.save_screen)
+
+        save_full_action = QAction('保存全屏截图')
+        self.menu.addAction(save_full_action)
+        save_full_action.triggered.connect(self.save_fullscreen)
+
+        save_screen_other = QAction('截图另存为')
+        self.menu.addAction(save_screen_other)
+        save_screen_other.triggered.connect(self.save_screen_other)
+
+        save_full_other = QAction('全屏另存为')
+        self.menu.addAction(save_full_other)
+        save_full_other.triggered.connect(self.save_full_other)
+
+        exit_action = QAction('退出截图')
+        self.menu.addAction(exit_action)
+        exit_action.triggered.connect(self.hide)
+        dest_point = self.mapToGlobal(point)
+        self.menu.exec_(dest_point)
