@@ -107,7 +107,8 @@ class FlatUI:
                 groove_color, slider_height, slider_radius
             ))
         qss.append(
-            "QSlider::handle:horizontal{width:%spx;margin-top:-%spx;margin-bottom:-%spx;border-radius:%spx; background:qradialgradient(spread:pad,cx:0.5,cy:0.5,radius:0.5,fx:0.5,fy:0.5,stop:0.6 %s,stop:0.8 %s);}" % (
+            "QSlider::handle:horizontal{width:%spx;margin-top:-%spx;margin-bottom:-%spx;border-radius:%spx; "
+            "background:qradialgradient(spread:pad,cx:0.5,cy:0.5,radius:0.5,fx:0.5,fy:0.5,stop:0.6 %s,stop:0.8 %s);}" % (
                 handle_width, handle_offset, handle_offset, handle_radius, handle_color, handle_border_color
             ))
 
@@ -123,7 +124,8 @@ class FlatUI:
             "QSlider::sub-page:vertical{background:%s;width:%spx;border-radius:%spx;}" % (
                 normal_color, slider_height, slider_radius))
         qss.append(
-            "QSlider::handle:vertical{height:%spx;margin-left:-%spx;margin-right:-%spx;border-radius:%spx; background:qradialgradient(spread:pad,cx:0.5,cy:0.5,radius:0.5,fx:0.5,fy:0.5,stop:0.6 %s,stop:0.8 %s);}" % (
+            "QSlider::handle:vertical{height:%spx;margin-left:-%spx;margin-right:-%spx;border-radius:%spx; "
+            "background:qradialgradient(spread:pad,cx:0.5,cy:0.5,radius:0.5,fx:0.5,fy:0.5,stop:0.6 %s,stop:0.8 %s);}" % (
                 handle_width, handle_offset, handle_offset, handle_radius, handle_color, handle_border_color
             ))
 
