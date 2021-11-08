@@ -7,12 +7,13 @@ file: devicesizetable.py
 @desc:
 """
 import sys
-from ctypes.wintypes import LPCWSTR
 
 from PyQt5.QtCore import QProcess, QDir, Qt, QSize
 from PyQt5.QtGui import QColor
-from PyQt5.QtWidgets import QWidget, QTableWidget, QAbstractItemView, QTableWidgetItem, QProgressBar
-from win32api import GetDiskFreeSpaceEx
+from PyQt5.QtWidgets import QTableWidget, QAbstractItemView, QTableWidgetItem, QProgressBar
+
+if sys.platform.startswith('win'):
+    from win32api import GetDiskFreeSpaceEx
 
 GB = 1024 * 1024 * 1024
 
@@ -29,7 +30,7 @@ class DeviceSizeTable(QTableWidget):
         self.text_color1 = QColor(10, 10, 10)
         self.text_color2 = QColor(255, 255, 255)
         self.text_color3 = QColor(255, 255, 255)
-
+        self.setMinimumSize(689, 338)
         self.process = QProcess(self)
 
         self.process.readyRead.connect(self.read_data)
@@ -95,6 +96,8 @@ class DeviceSizeTable(QTableWidget):
                     use = '%.2fGB' % (use / GB)
                     total = '%.2fGB' % (total / GB)
                     self.insert_size(dir_name, use, free, total, percent)
+        else:
+            self.process.start('df -h')
 
     def set_bg_color(self, bg_color):
         if self.bg_color != bg_color:
@@ -132,8 +135,12 @@ class DeviceSizeTable(QTableWidget):
             self.load()
 
     def read_data(self):
-        while not self.process.start():
+        while not self.process.atEnd():
             result = self.process.readLine()
+            result = str(result, encoding='utf-8')
+
+            if result.startswith('/dev/sd'):
+                self.check_size(result, '')
 
     def check_size(self, result: str, name):
         dev, use, free, all = 0, 0, 0, 0
@@ -142,7 +149,7 @@ class DeviceSizeTable(QTableWidget):
         index = 0
 
         for i in range(len(lists)):
-            s = i.strip()
+            s = lists[i].strip()
             if s == '':
                 continue
             index += 1
@@ -156,7 +163,7 @@ class DeviceSizeTable(QTableWidget):
             elif index == 4:
                 free = s
             elif index == 5:
-                percent = int(s[len(s) - 1])
+                percent = int(s[:len(s) - 1])
                 break
         if len(name) > 0:
             dev = name
